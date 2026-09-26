@@ -53,6 +53,17 @@ test.describe('navigation', () => {
 });
 
 test.describe('home page', () => {
+  for (const reducedMotion of ['no-preference', 'reduce'] as const) {
+    test(`hero slideshow advances on its own (${reducedMotion})`, async ({ page }) => {
+      await page.emulateMedia({ reducedMotion });
+      await page.goto('/');
+      const active = () => page.locator('.hero__slide.is-active').getAttribute('data-label');
+      const first = await active();
+      await expect.poll(active, { timeout: 12_000 }).not.toBe(first);
+      await expect(page.locator('.hero__slide.is-active')).toBeVisible();
+    });
+  }
+
   test('hero controls, tabs and carousel respond', async ({ page }) => {
     const errors = watchErrors(page);
     await page.goto('/');
@@ -60,9 +71,6 @@ test.describe('home page', () => {
     const first = await active();
     await page.getByRole('button', { name: 'Next slide' }).click();
     await expect.poll(active).not.toBe(first);
-    const pause = page.getByRole('button', { name: /Pause slideshow/ });
-    await pause.click();
-    await expect(page.locator('[data-hero-pause]')).toHaveAttribute('aria-pressed', 'true');
 
     const tab = page.getByRole('tab', { name: 'Wholesale' });
     await tab.scrollIntoViewIfNeeded();

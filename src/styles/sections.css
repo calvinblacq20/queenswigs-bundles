@@ -171,10 +171,6 @@
   transform: scaleX(0.02);
 }
 
-.hero.is-paused .hero__dot.is-active .hero__dot-fill {
-  transform: scaleX(1) !important;
-}
-
 .hero__controls .icon-btn:hover {
   background: rgb(255 255 255 / 0.12);
 }
