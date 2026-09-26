@@ -1,7 +1,7 @@
 import { $, $$ } from '../lib/dom';
 import { gsap, motionLevel, reducedMotion, ScrollTrigger } from '../lib/motion';
 
-const DURATION = 7000;
+const DURATION = 5000;
 
 /** Wrap each letter of `.hero__line` elements in a span for per-letter motion. */
 function splitChars(root: HTMLElement): void {
@@ -56,7 +56,7 @@ export function initHero(): void {
       hero.style.setProperty('--hero-bg', bg);
       hero.style.setProperty('--hero-ink', ink);
     } else {
-      gsap.to(hero, { '--hero-bg': bg, '--hero-ink': ink, duration: 1.2, ease: 'power2.inOut' });
+      gsap.to(hero, { '--hero-bg': bg, '--hero-ink': ink, duration: 0.7, ease: 'power2.inOut' });
     }
   };
 
@@ -66,7 +66,7 @@ export function initHero(): void {
       gsap.fromTo(
         slide,
         { autoAlpha: 0 },
-        { autoAlpha: 1, duration: 0.8, ease: 'power2.out', clearProps: 'opacity,visibility' },
+        { autoAlpha: 1, duration: 0.5, ease: 'power2.out', clearProps: 'opacity,visibility' },
       );
       return;
     }
@@ -79,20 +79,20 @@ export function initHero(): void {
       tl.fromTo(
         frame,
         { clipPath: 'inset(100% 0% 0% 0%)' },
-        { clipPath: 'inset(0% 0% 0% 0%)', duration: 1.3, ease: 'expo.inOut' },
+        { clipPath: 'inset(0% 0% 0% 0%)', duration: 0.9, ease: 'expo.inOut' },
         0,
       );
-    if (img) tl.fromTo(img, { scale: 1.3 }, { scale: 1, duration: 2.2, ease: 'expo.out' }, 0.1);
+    if (img) tl.fromTo(img, { scale: 1.3 }, { scale: 1, duration: 1.4, ease: 'expo.out' }, 0.1);
     tl.fromTo(
       chars,
       { yPercent: 120, rotate: 8 },
-      { yPercent: 0, rotate: 0, duration: 1.1, ease: 'expo.out', stagger: 0.03 },
+      { yPercent: 0, rotate: 0, duration: 0.75, ease: 'expo.out', stagger: 0.03 },
       0.35,
     );
     tl.fromTo(
       rest,
       { y: 30, autoAlpha: 0 },
-      { y: 0, autoAlpha: 1, duration: 0.9, ease: 'power3.out', stagger: 0.1 },
+      { y: 0, autoAlpha: 1, duration: 0.6, ease: 'power3.out', stagger: 0.1 },
       0.8,
     );
   };

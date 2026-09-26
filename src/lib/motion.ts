@@ -113,7 +113,7 @@ function fadeIn(el: Element): void {
   whenVisible(el, (instant, order) =>
     gsap.to(el, {
       autoAlpha: 1,
-      duration: instant ? 0 : 0.9,
+      duration: instant ? 0 : 0.6,
       ease: 'power2.out',
       delay: instant ? 0 : order * 0.06,
     }),
@@ -140,7 +140,7 @@ function splitHeadings(root: ParentNode): void {
       gsap.to(parts, {
         yPercent: 0,
         rotate: 0,
-        duration: instant ? 0 : chars ? 1 : 1.15,
+        duration: instant ? 0 : chars ? 0.7 : 0.8,
         ease: 'expo.out',
         stagger: instant ? 0 : chars ? 0.025 : 0.1,
         onComplete: () => split.revert(),
@@ -157,7 +157,7 @@ function reveals(root: ParentNode): void {
       gsap.to(el, {
         y: 0,
         autoAlpha: 1,
-        duration: instant ? 0 : 1.1,
+        duration: instant ? 0 : 0.7,
         ease: 'power3.out',
         delay: instant ? 0 : Number(el.dataset.delay ?? 0) + order * 0.06,
       }),
@@ -184,7 +184,7 @@ export function staggerIn(root: ParentNode = document): void {
         gsap.to(items, {
           y: 0,
           autoAlpha: 1,
-          duration: instant ? 0 : 1,
+          duration: instant ? 0 : 0.7,
           ease: 'power3.out',
           stagger: instant ? 0 : 0.08,
           overwrite: true,
@@ -199,7 +199,7 @@ export function staggerIn(root: ParentNode = document): void {
         gsap.to(item, {
           y: 0,
           autoAlpha: 1,
-          duration: instant ? 0 : 1,
+          duration: instant ? 0 : 0.7,
           ease: 'power3.out',
           delay: instant ? 0 : order * 0.09,
           overwrite: true,
@@ -221,8 +221,8 @@ function curtains(root: ParentNode): void {
     whenVisible(el, (instant) => {
       if (instant) return void gsap.set(el, { clipPath: 'inset(0% 0% 0% 0%)' });
       const tl = gsap.timeline();
-      tl.to(el, { clipPath: 'inset(0% 0% 0% 0%)', duration: 1.4, ease: 'expo.inOut' });
-      if (img) tl.fromTo(img, { scale: 1.35 }, { scale: 1, duration: 2, ease: 'expo.out' }, 0.1);
+      tl.to(el, { clipPath: 'inset(0% 0% 0% 0%)', duration: 0.9, ease: 'expo.inOut' });
+      if (img) tl.fromTo(img, { scale: 1.35 }, { scale: 1, duration: 1.3, ease: 'expo.out' }, 0.1);
     });
   }
 }
@@ -337,7 +337,7 @@ function counters(root: ParentNode): void {
     whenVisible(el, (instant) =>
       gsap.to(state, {
         v: target,
-        duration: instant ? 0 : 2.2,
+        duration: instant ? 0 : 1.4,
         ease: 'power2.out',
         onUpdate: () => {
           el.textContent = `${fmt.format(Math.round(state.v))}${suffix}`;
@@ -365,7 +365,7 @@ function darkeners(root: ParentNode): void {
 function lines(root: ParentNode): void {
   for (const el of $$('[data-line]', root)) {
     gsap.set(el, { scaleX: 0, transformOrigin: 'left center' });
-    whenVisible(el, (instant) => gsap.to(el, { scaleX: 1, duration: instant ? 0 : 1.4, ease: 'expo.inOut' }));
+    whenVisible(el, (instant) => gsap.to(el, { scaleX: 1, duration: instant ? 0 : 0.9, ease: 'expo.inOut' }));
   }
 }
 
