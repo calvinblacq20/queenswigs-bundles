@@ -12,7 +12,10 @@ for (const { slug, url } of PAGES) {
     const report = await measure(page);
 
     await page.screenshot({ path: shotPath(info, `${slug}-top`) });
-    await page.screenshot({ path: shotPath(info, `${slug}-full`), fullPage: true, scale: 'css' });
+    // Full-page captures are slow on long pages; opt in with SHOTS=full.
+    if (process.env.SHOTS === 'full') {
+      await page.screenshot({ path: shotPath(info, `${slug}-full`), fullPage: true, scale: 'css' });
+    }
     await info.attach('layout-report', {
       body: JSON.stringify(report, null, 2),
       contentType: 'application/json',

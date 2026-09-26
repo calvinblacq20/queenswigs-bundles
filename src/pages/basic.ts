@@ -3,7 +3,7 @@ import { initCarousels } from '../components/carousel';
 import { initShell } from '../components/shell';
 import { initTabs } from '../components/tabs';
 import { $$ } from '../lib/dom';
-import { initMotion } from '../lib/motion';
+import { initMotion, reducedMotion } from '../lib/motion';
 
 // FAQ accordions: animate <details> height open/closed.
 for (const d of $$<HTMLDetailsElement>('details.faq__item')) {
@@ -11,7 +11,7 @@ for (const d of $$<HTMLDetailsElement>('details.faq__item')) {
   const body = d.querySelector<HTMLElement>('.faq__body');
   if (!summary || !body) continue;
   summary.addEventListener('click', (e) => {
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    if (reducedMotion) return;
     e.preventDefault();
     if (d.open) {
       const anim = body.animate(

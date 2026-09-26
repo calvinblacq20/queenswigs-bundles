@@ -24,7 +24,14 @@ import Lenis from 'lenis';
 
 gsap.registerPlugin(ScrollTrigger, SplitText);
 
-export const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+/** Resolved once by /boot.js before first paint. 'calm' keeps fades and ambient loops only. */
+export const motionLevel: 'full' | 'calm' | 'off' = ((): 'full' | 'calm' | 'off' => {
+  const v = document.documentElement.dataset.motion;
+  return v === 'calm' || v === 'off' ? v : 'full';
+})();
+/** True when travel, zoom, parallax and scroll-coupled effects must be skipped. */
+export const reducedMotion = motionLevel !== 'full';
+const calm = motionLevel === 'calm';
 const finePointer = window.matchMedia('(pointer: fine)').matches;
 
 let lenis: Lenis | null = null;
@@ -114,7 +121,7 @@ function splitHeadings(root: ParentNode): void {
 function reveals(root: ParentNode): void {
   for (const el of $$('[data-reveal]:not(.is-revealed)', root)) {
     el.classList.add('is-revealed');
-    gsap.set(el, { y: 32, autoAlpha: 0 });
+    gsap.set(el, { y: calm ? 0 : 32, autoAlpha: 0 });
     whenVisible(el, (instant, order) =>
       gsap.to(el, {
         y: 0,
@@ -129,7 +136,7 @@ function reveals(root: ParentNode): void {
 
 /** Reveal children of [data-stagger] containers row by row. Call again after rendering new cards. */
 export function staggerIn(root: ParentNode = document): void {
-  if (reducedMotion) return;
+  if (motionLevel === 'off') return;
   const groups = [
     ...(root instanceof Element && root.matches('[data-stagger]') ? [root] : []),
     ...$$('[data-stagger]', root),
@@ -141,7 +148,7 @@ export function staggerIn(root: ParentNode = document): void {
     // whole row together when the track itself comes into view.
     if (getComputedStyle(group).overflowX !== 'visible') {
       items.forEach((item) => item.classList.add('is-revealed'));
-      gsap.set(items, { y: 36, autoAlpha: 0 });
+      gsap.set(items, { y: calm ? 0 : 36, autoAlpha: 0 });
       whenVisible(group, (instant) =>
         gsap.to(items, {
           y: 0,
@@ -156,7 +163,7 @@ export function staggerIn(root: ParentNode = document): void {
     }
     items.forEach((item) => {
       item.classList.add('is-revealed');
-      gsap.set(item, { y: 36, autoAlpha: 0 });
+      gsap.set(item, { y: calm ? 0 : 36, autoAlpha: 0 });
       whenVisible(item, (instant, order) =>
         gsap.to(item, {
           y: 0,
@@ -407,10 +414,31 @@ function chrome(): void {
   }
 }
 
+/** Calm mode: headings and curtain images fade in place instead of rising or wiping. */
+function calmFades(root: ParentNode): void {
+  for (const el of $$('[data-split]:not(.is-split), [data-curtain]:not(.is-revealed)', root)) {
+    el.classList.add(el.matches('[data-split]') ? 'is-split' : 'is-revealed');
+    gsap.set(el, { clipPath: 'none', autoAlpha: 0 });
+    whenVisible(el, (instant) =>
+      gsap.to(el, { autoAlpha: 1, duration: instant ? 0 : 0.9, ease: 'power1.out' }),
+    );
+  }
+}
+
 /** Initialise every effect found under `root`. Safe to call once per page. */
 export function initMotion(root: ParentNode = document): void {
-  if (reducedMotion) {
-    document.documentElement.classList.remove('motion');
+  if (motionLevel === 'off') return;
+  if (calm) {
+    // Less motion, not none: fades, counters and ambient loops stay; travel, zoom and parallax go.
+    chrome();
+    marquees(root);
+    counters(root);
+    darkeners(root);
+    stories(root);
+    calmFades(root);
+    reveals(root);
+    staggerIn(root);
+    (window as unknown as { __motion?: boolean }).__motion = true;
     return;
   }
   smoothScroll();
@@ -440,9 +468,10 @@ export function initMotion(root: ParentNode = document): void {
 
 /** Reveal elements rendered after load (e.g. filtered product grids). */
 export function motionFor(root: ParentNode): void {
-  if (reducedMotion) return;
+  if (motionLevel === 'off') return;
   reveals(root);
-  curtains(root);
   staggerIn(root);
+  if (calm) return calmFades(root);
+  curtains(root);
   splitHeadings(root);
 }
