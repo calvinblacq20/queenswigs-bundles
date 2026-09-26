@@ -1,0 +1,7 @@
+@import '@fontsource-variable/bodoni-moda/opsz.css';
+@import '@fontsource-variable/bodoni-moda/opsz-italic.css';
+@import 'lenis/dist/lenis.css';
+@import './base.css';
+@import './chrome.css';
+@import './sections.css';
+@import './pages.css';

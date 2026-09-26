@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="en-GH">
+  <head>
+    <!-- @include head -->
+    <title>Shop All Wigs | Queens Wigs &amp; Bundles</title>
+    <meta
+      name="description"
+      content="Shop 100% human hair wigs and bundles by texture, length and price: bounce curls, pixie curls, bobs, afros, body wave, deep wave, straight and Chioma wigs. Prices in GH₵."
+    />
+    <link rel="canonical" href="https://queenswigsandbundlesgh.com/shop.html" />
+    <meta property="og:title" content="Shop All Wigs | Queens Wigs &amp; Bundles" />
+    <meta property="og:url" content="https://queenswigsandbundlesgh.com/shop.html" />
+  </head>
+  <body>
+    <!-- @include header -->
+
+    <main id="main">
+      <section class="page-hero on-dark">
+        <div class="page-hero__bg" data-parallax="8">
+          <img
+            data-collection-img
+            src="/img/edit-noir-1200.webp"
+            srcset="
+              /img/edit-noir-800.webp   800w,
+              /img/edit-noir-1200.webp 1200w,
+              /img/edit-noir-1600.webp 1600w
+            "
+            sizes="100vw"
+            width="1200"
+            height="1800"
+            alt=""
+          />
+        </div>
+        <div class="container page-hero__copy">
+          <p class="eyebrow" data-reveal>The collection</p>
+          <h1 class="display-lg" data-collection-title>Shop All Wigs</h1>
+          <p data-collection-blurb>
+            Every texture, every length. 100% human hair, available for pickup in Kasoa or delivered
+            nationwide.
+          </p>
+        </div>
+      </section>
+
+      <div class="toolbar">
+        <div class="container toolbar__row">
+          <div class="toolbar__chips" data-cat-pills role="group" aria-label="Filter by style"></div>
+          <form class="toolbar__controls" data-shop-search-form role="search">
+            <div class="toolbar__search">
+              <label class="visually-hidden" for="shop-search">Search wigs</label>
+              <input
+                id="shop-search"
+                type="search"
+                placeholder="Search e.g. glueless, 20 inch"
+                maxlength="60"
+                autocomplete="off"
+              />
+            </div>
+            <label class="visually-hidden" for="max-price">Maximum price</label>
+            <select class="select" id="max-price">
+              <option value="">Any price</option>
+              <option value="500">Under GH₵500</option>
+              <option value="1000">Under GH₵1,000</option>
+              <option value="2000">Under GH₵2,000</option>
+              <option value="3000">Under GH₵3,000</option>
+            </select>
+            <label class="visually-hidden" for="sort">Sort by</label>
+            <select class="select" id="sort">
+              <option value="featured">Featured</option>
+              <option value="price-asc">Price: low to high</option>
+              <option value="price-desc">Price: high to low</option>
+              <option value="name">Name A–Z</option>
+            </select>
+          </form>
+        </div>
+      </div>
+
+      <section class="section" style="padding-top: 0" aria-label="Products">
+        <div class="container">
+          <p class="results-count" data-count-label aria-live="polite"></p>
+          <div class="grid grid--products" data-grid>
+            <noscript
+              ><p>
+                Please enable JavaScript to browse the catalogue, or call/WhatsApp us on 024 164 8058.
+              </p></noscript
+            >
+          </div>
+        </div>
+      </section>
+
+      <section class="section section--cream" aria-labelledby="help-title">
+        <div class="container section-head section-head--center">
+          <p class="eyebrow" data-reveal>Can’t decide?</p>
+          <h2 class="section-title" id="help-title" data-split>Send us a photo of the look you want</h2>
+          <p class="section-head__lede" data-reveal>
+            Our team will match it to a texture, length and budget, then reserve it for pickup or delivery.
+          </p>
+          <a
+            class="btn btn--wa"
+            data-wa="Hello Queens Wigs &amp; Bundles, can you help me choose a wig? I will send a photo."
+            href="https://wa.me/233241648058"
+            data-reveal
+            data-magnetic
+            >Chat on WhatsApp</a
+          >
+        </div>
+      </section>
+    </main>
+
+    <!-- @include footer -->
+    <!-- @include drawers -->
+    <script type="module" src="/src/pages/shop.ts"></script>
+  </body>
+</html>
