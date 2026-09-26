@@ -56,10 +56,12 @@
   font-weight: 700;
 }
 
-.announce__item a {
+.announce__item a,
+.announce__item > span {
   display: inline-flex;
   align-items: center;
   gap: 8px;
+  min-height: 40px;
 }
 
 .announce__item a:hover {
@@ -177,6 +179,7 @@
     font-size: 12px;
     letter-spacing: 0.12em;
     text-transform: uppercase;
+    min-height: 44px;
     padding-inline: 10px;
   }
 
@@ -410,6 +413,7 @@
   display: flex;
   flex-direction: column;
   width: min(440px, 100vw - 32px);
+  container-type: inline-size;
   background: var(--paper);
   transition: transform 0.6s var(--ease-expo);
   overflow: hidden;
@@ -464,11 +468,14 @@
 
 .menu-list a {
   display: flex;
+  flex-wrap: wrap;
   align-items: baseline;
   justify-content: space-between;
+  gap: 0 8px;
   padding-block: 14px;
   font-family: var(--serif);
-  font-size: 26px;
+  /* Shrinks with the drawer so the longest labels stay on one line on small phones. */
+  font-size: clamp(21px, 7.2cqi, 26px);
 }
 
 .menu-list a small {
@@ -774,6 +781,107 @@
   cursor: pointer;
 }
 
+/* Browsers with customizable select get a styled option list; others keep the native picker. */
+@supports (appearance: base-select) {
+  .select,
+  .select::picker(select) {
+    appearance: base-select;
+  }
+
+  .select {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding-right: 14px;
+    background-image: none;
+    transition:
+      border-color 0.2s,
+      box-shadow 0.2s;
+  }
+
+  .select:hover,
+  .select:open {
+    border-color: var(--ink);
+  }
+
+  .select::picker-icon {
+    content: '';
+    width: 12px;
+    height: 8px;
+    margin-inline-start: auto;
+    background: currentColor;
+    mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' fill='none' stroke='%23000' stroke-width='1.5'/%3E%3C/svg%3E")
+      center / contain no-repeat;
+    transition: rotate 0.3s var(--ease-expo);
+  }
+
+  .select:open::picker-icon {
+    rotate: 180deg;
+  }
+
+  .select::picker(select) {
+    /* Open below the field; flip above only when it would not fit. */
+    position-try-order: normal;
+    margin-block: 6px;
+    padding: 6px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: var(--paper);
+    color: var(--ink);
+    box-shadow: 0 24px 48px -18px rgb(11 10 9 / 0.28);
+    opacity: 0;
+    translate: 0 -6px;
+    transition:
+      opacity 0.2s var(--ease),
+      translate 0.3s var(--ease-expo),
+      display 0.3s allow-discrete,
+      overlay 0.3s allow-discrete;
+  }
+
+  .select:open::picker(select) {
+    opacity: 1;
+    translate: 0;
+  }
+
+  @starting-style {
+    .select:open::picker(select) {
+      opacity: 0;
+      translate: 0 -6px;
+    }
+  }
+
+  .select option {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-height: 44px;
+    padding: 10px 12px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+  }
+
+  .select option:hover {
+    background: var(--cream);
+  }
+
+  .select option:focus-visible {
+    background: var(--cream);
+    outline: 2px solid var(--gold-ink);
+    outline-offset: -2px;
+  }
+
+  .select option:checked {
+    font-weight: 600;
+  }
+
+  .select option::checkmark {
+    order: 1;
+    margin-inline-start: auto;
+    color: var(--gold-ink);
+  }
+}
+
 /* ——— Toast ——— */
 .toast {
   position: fixed;
@@ -901,15 +1009,25 @@
 
 .footer__links {
   display: grid;
-  gap: 8px;
+  gap: 2px;
   font-size: 15px;
+}
+
+.footer__links a,
+.footer__bottom a {
+  display: inline-block;
+  padding-block: 5px;
 }
 
 .footer__contact {
   display: grid;
-  gap: 10px;
+  gap: 4px;
   font-size: 15px;
   font-style: normal;
+}
+
+.footer__contact a {
+  padding-block: 5px;
 }
 
 .footer__wordmark {
@@ -938,8 +1056,16 @@
 
 @media (max-width: 599px) {
   .announce {
+    grid-template-columns: 36px 1fr 36px;
     font-size: 11px;
     letter-spacing: 0.08em;
+  }
+
+  .wa-float {
+    right: 14px;
+    bottom: 14px;
+    height: 52px;
+    padding-inline: 13px;
   }
 
   .announce__item {

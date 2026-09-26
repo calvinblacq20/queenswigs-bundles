@@ -1,20 +1,34 @@
-/* ——— Hero ——— */
+/* ——— Hero ———
+ * Title + copy sit in one centred column, so they can never collide. The title's size is
+ * capped by BOTH viewport width and height (short laptops, small phones), and the portrait
+ * frame is absolutely centred behind it. --chrome-h = announcement bar + header height.
+ */
 .hero {
   --hero-bg: #0b0a09;
   --hero-ink: #f6f1e9;
+  --chrome-h: 104px;
   position: relative;
-  height: max(600px, min(100svh - 104px, 940px));
+  height: clamp(480px, calc(100svh - var(--chrome-h)), 940px);
   background: var(--hero-bg);
   color: var(--hero-ink);
   overflow: hidden;
   isolation: isolate;
 }
 
+@media (min-width: 1100px) {
+  .hero {
+    --chrome-h: 158px;
+  }
+}
+
 .hero__slide {
   position: absolute;
   inset: 0;
-  display: grid;
-  place-items: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 20px 0 72px;
   visibility: hidden;
 }
 
@@ -24,12 +38,12 @@
 
 /* Centred with inset + auto margins (GSAP owns `transform`/`translate` on this element). */
 .hero__frame {
-  --fw: clamp(230px, 34vw, 470px);
+  --fw: clamp(200px, min(34vw, 50svh), 470px);
   position: absolute;
-  inset: 0 0 5% 0;
+  inset: 0 0 8% 0;
   margin: auto;
   width: var(--fw);
-  height: min(calc(var(--fw) * 1.3667), 88%);
+  height: min(calc(var(--fw) * 1.3667), 80%);
   overflow: hidden;
   z-index: 1;
 }
@@ -46,7 +60,7 @@
   z-index: 2;
   width: 100%;
   padding-inline: var(--gutter);
-  font-size: clamp(64px, 15.5vw, 250px);
+  font-size: clamp(52px, min(15.5vw, calc((100svh - var(--chrome-h) - 290px) / 1.75)), 250px);
   line-height: 0.84;
   letter-spacing: -0.035em;
   text-transform: uppercase;
@@ -57,7 +71,7 @@
   display: block;
   margin-bottom: 0.1em;
   font-family: var(--sans);
-  font-size: clamp(12px, 1.1vw, 15px);
+  font-size: clamp(11px, 1.1vw, 15px);
   font-weight: 600;
   letter-spacing: 0.4em;
   text-align: center;
@@ -86,22 +100,19 @@
 }
 
 .hero__copy {
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: clamp(72px, 10vh, 110px);
+  position: relative;
   z-index: 3;
   display: grid;
   justify-items: center;
-  gap: 18px;
+  gap: clamp(12px, 2svh, 18px);
   width: min(520px, 100% - 32px);
-  margin-inline: auto;
+  margin-top: clamp(14px, 3svh, 36px);
   text-align: center;
 }
 
 .hero__copy p {
-  font-size: clamp(15px, 1.3vw, 18px);
-  text-shadow: 0 1px 12px rgb(0 0 0 / 0.35);
+  font-size: clamp(14px, 1.3vw, 18px);
+  text-shadow: 0 1px 12px rgb(0 0 0 / 0.45);
 }
 
 .hero__ctas {
@@ -119,7 +130,7 @@
   position: absolute;
   left: 0;
   right: 0;
-  bottom: 22px;
+  bottom: 16px;
   z-index: 4;
   display: flex;
   align-items: center;
@@ -135,7 +146,7 @@
 .hero__dot {
   position: relative;
   width: 42px;
-  height: 24px;
+  height: 44px;
 }
 
 .hero__dot::before,
@@ -173,7 +184,7 @@
   right: clamp(12px, 5vw, 80px);
   top: clamp(16px, 7vh, 80px);
   z-index: 3;
-  width: clamp(92px, 10vw, 140px);
+  width: clamp(84px, 10vw, 140px);
   aspect-ratio: 1;
   color: var(--gold);
 }
@@ -192,23 +203,34 @@
 }
 
 @media (max-width: 699px) {
-  .hero {
-    height: max(620px, calc(100svh - 104px));
+  .hero__slide {
+    padding-bottom: 64px;
   }
 
   .hero__frame {
-    --fw: 64vw;
-    inset: 0 0 18% 0;
+    --fw: min(62vw, 44svh);
+    inset: 0 0 14% 0;
   }
 
   .hero__title {
-    font-size: 19vw;
-    top: -9%;
+    font-size: clamp(48px, min(19vw, calc((100svh - var(--chrome-h) - 250px) / 1.75)), 120px);
+  }
+
+  /* Swipe changes slides on phones; keep the control row clear of the WhatsApp button. */
+  .hero__controls [data-hero-prev],
+  .hero__controls [data-hero-next] {
+    display: none;
   }
 
   .hero__badge {
-    top: 18px;
-    right: 14px;
+    top: 14px;
+    right: 12px;
+  }
+}
+
+@media (max-width: 479px) {
+  .hero .hero__ctas .btn--ghost-light {
+    display: none;
   }
 }
 
@@ -611,12 +633,20 @@
   .stats {
     grid-template-columns: repeat(4, 1fr);
   }
+
+  .stat__num {
+    font-size: clamp(44px, 5.4vw, 80px);
+  }
+}
+
+.stat {
+  min-width: 0;
 }
 
 .stat__num {
   display: block;
   font-family: var(--serif);
-  font-size: clamp(44px, 5.4vw, 80px);
+  font-size: clamp(34px, 10.5vw, 56px);
   line-height: 1;
   font-variant-numeric: lining-nums tabular-nums;
 }

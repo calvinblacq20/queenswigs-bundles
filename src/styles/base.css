@@ -80,6 +80,12 @@ a {
   text-decoration: none;
 }
 
+/* Long addresses (emails, URLs) must wrap instead of widening the page on small phones. */
+a[href^='mailto:'],
+address {
+  overflow-wrap: anywhere;
+}
+
 button,
 input,
 select,
@@ -136,6 +142,12 @@ ol {
 ::selection {
   background: var(--gold);
   color: var(--noir);
+}
+
+@media (max-width: 479px) {
+  .hide-sm {
+    display: none;
+  }
 }
 
 .visually-hidden {
@@ -390,7 +402,7 @@ ol {
 .link-underline {
   position: relative;
   display: inline-block;
-  padding-bottom: 4px;
+  padding-block: 7px 5px;
   font-size: 12px;
   font-weight: 600;
   letter-spacing: 0.18em;

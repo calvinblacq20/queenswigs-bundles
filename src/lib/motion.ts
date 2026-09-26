@@ -55,43 +55,74 @@ function smoothScroll(): void {
   gsap.ticker.lagSmoothing(0);
 }
 
+/*
+ * One-shot reveals use IntersectionObserver rather than ScrollTrigger: IO measures the live
+ * layout every time, so content can never stay hidden because positions were measured before
+ * images, fonts or client-rendered sections settled. Elements already scrolled past (restored
+ * scroll, anchor jumps) are shown instantly instead of animating off-screen.
+ */
+type Reveal = (instant: boolean, order: number) => void;
+const pending = new Map<Element, Reveal>();
+const observer =
+  typeof IntersectionObserver === 'undefined'
+    ? null
+    : new IntersectionObserver(
+        (entries) => {
+          let order = 0;
+          for (const entry of entries) {
+            const above = entry.boundingClientRect.bottom < 0;
+            if (!entry.isIntersecting && !above) continue;
+            const run = pending.get(entry.target);
+            observer?.unobserve(entry.target);
+            pending.delete(entry.target);
+            run?.(above, above ? 0 : order++);
+          }
+        },
+        { rootMargin: '0px 0px -4% 0px' },
+      );
+
+function whenVisible(el: Element, run: Reveal): void {
+  if (!observer) return run(true, 0);
+  pending.set(el, run);
+  observer.observe(el);
+}
+
 function splitHeadings(root: ParentNode): void {
   for (const el of $$('[data-split]:not(.is-split)', root)) {
     const chars = el.dataset.split === 'chars';
-    SplitText.create(el, {
+    const split = SplitText.create(el, {
       type: chars ? 'lines,words,chars' : 'lines',
       mask: 'lines',
       linesClass: 'split-line',
-      onSplit(self) {
-        el.classList.add('is-split');
-        return gsap.from(chars ? self.chars : self.lines, {
-          yPercent: 115,
-          rotate: chars ? 6 : 0,
-          duration: chars ? 1 : 1.15,
-          ease: 'expo.out',
-          stagger: chars ? 0.025 : 0.1,
-          scrollTrigger: { trigger: el, start: 'top 90%', once: true },
-          onComplete: () => self.revert(),
-        });
-      },
     });
+    const parts = chars ? split.chars : split.lines;
+    el.classList.add('is-split');
+    gsap.set(parts, { yPercent: 115, rotate: chars ? 6 : 0 });
+    whenVisible(el, (instant) =>
+      gsap.to(parts, {
+        yPercent: 0,
+        rotate: 0,
+        duration: instant ? 0 : chars ? 1 : 1.15,
+        ease: 'expo.out',
+        stagger: instant ? 0 : chars ? 0.025 : 0.1,
+        onComplete: () => split.revert(),
+      }),
+    );
   }
 }
 
 function reveals(root: ParentNode): void {
   for (const el of $$('[data-reveal]:not(.is-revealed)', root)) {
     el.classList.add('is-revealed');
-    gsap.fromTo(
-      el,
-      { y: 32, autoAlpha: 0 },
-      {
+    gsap.set(el, { y: 32, autoAlpha: 0 });
+    whenVisible(el, (instant, order) =>
+      gsap.to(el, {
         y: 0,
         autoAlpha: 1,
-        duration: 1.1,
+        duration: instant ? 0 : 1.1,
         ease: 'power3.out',
-        delay: Number(el.dataset.delay ?? 0),
-        scrollTrigger: { trigger: el, start: 'top bottom', once: true },
-      },
+        delay: instant ? 0 : Number(el.dataset.delay ?? 0) + order * 0.06,
+      }),
     );
   }
 }
@@ -99,37 +130,58 @@ function reveals(root: ParentNode): void {
 /** Reveal children of [data-stagger] containers row by row. Call again after rendering new cards. */
 export function staggerIn(root: ParentNode = document): void {
   if (reducedMotion) return;
-  for (const group of $$('[data-stagger]', root)) {
-    const items = Array.from(group.children).filter(
-      (c) => !c.classList.contains('is-revealed'),
-    ) as HTMLElement[];
+  const groups = [
+    ...(root instanceof Element && root.matches('[data-stagger]') ? [root] : []),
+    ...$$('[data-stagger]', root),
+  ];
+  for (const group of groups) {
+    const items = Array.from(group.children).filter((c) => !c.classList.contains('is-revealed'));
     if (!items.length) continue;
-    items.forEach((i) => i.classList.add('is-revealed'));
-    gsap.set(items, { y: 36, autoAlpha: 0 });
-    ScrollTrigger.batch(items, {
-      start: 'top bottom',
-      once: true,
-      onEnter: (batch) =>
-        gsap.to(batch, {
+    // Swipe tracks: cards off to the side never cross the viewport vertically, so reveal the
+    // whole row together when the track itself comes into view.
+    if (getComputedStyle(group).overflowX !== 'visible') {
+      items.forEach((item) => item.classList.add('is-revealed'));
+      gsap.set(items, { y: 36, autoAlpha: 0 });
+      whenVisible(group, (instant) =>
+        gsap.to(items, {
           y: 0,
           autoAlpha: 1,
-          duration: 1,
+          duration: instant ? 0 : 1,
           ease: 'power3.out',
-          stagger: 0.09,
+          stagger: instant ? 0 : 0.08,
           overwrite: true,
         }),
+      );
+      continue;
+    }
+    items.forEach((item) => {
+      item.classList.add('is-revealed');
+      gsap.set(item, { y: 36, autoAlpha: 0 });
+      whenVisible(item, (instant, order) =>
+        gsap.to(item, {
+          y: 0,
+          autoAlpha: 1,
+          duration: instant ? 0 : 1,
+          ease: 'power3.out',
+          delay: instant ? 0 : order * 0.09,
+          overwrite: true,
+        }),
+      );
     });
   }
-  ScrollTrigger.refresh();
 }
 
 function curtains(root: ParentNode): void {
   for (const el of $$('[data-curtain]', root)) {
     const from = el.dataset.curtain === 'left' ? 'inset(0% 100% 0% 0%)' : 'inset(100% 0% 0% 0%)';
     const img = el.querySelector('img');
-    const tl = gsap.timeline({ scrollTrigger: { trigger: el, start: 'top 88%', once: true } });
-    tl.fromTo(el, { clipPath: from }, { clipPath: 'inset(0% 0% 0% 0%)', duration: 1.4, ease: 'expo.inOut' });
-    if (img) tl.fromTo(img, { scale: 1.35 }, { scale: 1, duration: 2, ease: 'expo.out' }, 0.1);
+    gsap.set(el, { clipPath: from });
+    whenVisible(el, (instant) => {
+      if (instant) return void gsap.set(el, { clipPath: 'inset(0% 0% 0% 0%)' });
+      const tl = gsap.timeline();
+      tl.to(el, { clipPath: 'inset(0% 0% 0% 0%)', duration: 1.4, ease: 'expo.inOut' });
+      if (img) tl.fromTo(img, { scale: 1.35 }, { scale: 1, duration: 2, ease: 'expo.out' }, 0.1);
+    });
   }
 }
 
@@ -238,15 +290,16 @@ function counters(root: ParentNode): void {
     const suffix = el.dataset.suffix ?? '';
     const state = { v: 0 };
     el.textContent = `0${suffix}`;
-    gsap.to(state, {
-      v: target,
-      duration: 2.2,
-      ease: 'power2.out',
-      scrollTrigger: { trigger: el, start: 'top 90%', once: true },
-      onUpdate: () => {
-        el.textContent = `${fmt.format(Math.round(state.v))}${suffix}`;
-      },
-    });
+    whenVisible(el, (instant) =>
+      gsap.to(state, {
+        v: target,
+        duration: instant ? 0 : 2.2,
+        ease: 'power2.out',
+        onUpdate: () => {
+          el.textContent = `${fmt.format(Math.round(state.v))}${suffix}`;
+        },
+      }),
+    );
   }
 }
 
@@ -267,17 +320,8 @@ function darkeners(root: ParentNode): void {
 
 function lines(root: ParentNode): void {
   for (const el of $$('[data-line]', root)) {
-    gsap.fromTo(
-      el,
-      { scaleX: 0 },
-      {
-        scaleX: 1,
-        transformOrigin: 'left center',
-        duration: 1.4,
-        ease: 'expo.inOut',
-        scrollTrigger: { trigger: el, start: 'top 95%', once: true },
-      },
-    );
+    gsap.set(el, { scaleX: 0, transformOrigin: 'left center' });
+    whenVisible(el, (instant) => gsap.to(el, { scaleX: 1, duration: instant ? 0 : 1.4, ease: 'expo.inOut' }));
   }
 }
 

@@ -9,7 +9,7 @@ import { isSortKey, queryCatalog, type CatalogQuery } from '../lib/catalog';
 import { $, $$ } from '../lib/dom';
 import { html } from '../lib/html';
 import { editSrc, editSrcset } from '../lib/images';
-import { gsap, initMotion, reducedMotion, ScrollTrigger } from '../lib/motion';
+import { gsap, initMotion, reducedMotion, ScrollTrigger, staggerIn } from '../lib/motion';
 
 const params = new URLSearchParams(window.location.search);
 
@@ -91,13 +91,8 @@ function render(q: CatalogQuery, animate: boolean): void {
       { y: 50, autoAlpha: 0 },
       { y: 0, autoAlpha: 1, stagger: 0.04, duration: 0.8, ease: 'power3.out' },
     );
-  } else if (!reducedMotion) {
-    gsap.set(grid.children, { y: 36, autoAlpha: 0 });
-    ScrollTrigger.batch(Array.from(grid.children), {
-      start: 'top bottom',
-      once: true,
-      onEnter: (b) => gsap.to(b, { y: 0, autoAlpha: 1, stagger: 0.08, duration: 1, ease: 'power3.out' }),
-    });
+  } else {
+    staggerIn(grid);
   }
   ScrollTrigger.refresh();
 }

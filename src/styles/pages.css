@@ -63,6 +63,8 @@
   overflow-x: auto;
   scrollbar-width: none;
   padding-block: 2px;
+  padding-right: 32px;
+  mask-image: linear-gradient(90deg, #000 calc(100% - 40px), transparent);
 }
 
 .toolbar__chips::-webkit-scrollbar {
@@ -147,6 +149,12 @@
   padding-block: 20px;
   font-size: 13px;
   color: var(--muted);
+}
+
+.crumbs a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 32px;
 }
 
 .crumbs a:hover {
@@ -553,6 +561,7 @@
 }
 
 .info-card {
+  min-width: 0;
   display: grid;
   align-content: start;
   gap: 12px;
