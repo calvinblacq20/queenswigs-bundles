@@ -1,5 +1,5 @@
 import { $, $$ } from '../lib/dom';
-import { gsap, reducedMotion, ScrollTrigger } from '../lib/motion';
+import { gsap, motionLevel, reducedMotion, ScrollTrigger } from '../lib/motion';
 
 const DURATION = 7000;
 
@@ -19,7 +19,10 @@ function splitChars(root: HTMLElement): void {
   }
 }
 
-/** Editorial hero slideshow: letter-by-letter titles, curtain image swaps, colour-shifting backdrop. */
+/**
+ * Editorial hero slideshow that always advances on its own: letter-by-letter titles, curtain image
+ * swaps and a colour-shifting backdrop; in calm motion the slides crossfade instead.
+ */
 export function initHero(): void {
   const hero = $('[data-hero]');
   if (!hero) return;
@@ -40,15 +43,16 @@ export function initHero(): void {
       .join('');
   }
   const dots = $$<HTMLButtonElement>('.hero__dot', hero);
-  const pause = $<HTMLButtonElement>('[data-hero-pause]', hero);
   let index = 0;
-  let playing = !reducedMotion;
+  // Only the explicit ?motion=off switch stops the slideshow.
+  const autoplay = motionLevel !== 'off';
+  const calm = motionLevel === 'calm';
   let timer: gsap.core.Tween | null = null;
 
   const setBg = (slide: HTMLElement, instant = false): void => {
     const bg = slide.dataset.bg ?? '#0b0a09';
     const ink = slide.dataset.ink ?? '#f6f1e9';
-    if (instant || reducedMotion) {
+    if (instant || !autoplay) {
       hero.style.setProperty('--hero-bg', bg);
       hero.style.setProperty('--hero-ink', ink);
     } else {
@@ -57,7 +61,15 @@ export function initHero(): void {
   };
 
   const enter = (slide: HTMLElement): void => {
-    if (reducedMotion) return;
+    if (!autoplay) return;
+    if (calm) {
+      gsap.fromTo(
+        slide,
+        { autoAlpha: 0 },
+        { autoAlpha: 1, duration: 0.8, ease: 'power2.out', clearProps: 'opacity,visibility' },
+      );
+      return;
+    }
     const chars = $$('.hero__char', slide);
     const img = $('.hero__img', slide);
     const frame = $('.hero__frame', slide);
@@ -87,7 +99,20 @@ export function initHero(): void {
 
   const leave = (slide: HTMLElement): Promise<void> =>
     new Promise((resolve) => {
-      if (reducedMotion) return resolve();
+      if (!autoplay) return resolve();
+      if (calm) {
+        gsap.to(slide, {
+          autoAlpha: 0,
+          duration: 0.5,
+          ease: 'power2.in',
+          onComplete: () => {
+            // Hand visibility back to the stylesheet; the slide loses .is-active before the next paint.
+            gsap.set(slide, { clearProps: 'opacity,visibility' });
+            resolve();
+          },
+        });
+        return;
+      }
       gsap
         .timeline({ onComplete: () => resolve() })
         .to(
@@ -108,7 +133,7 @@ export function initHero(): void {
     const fill = $('.hero__dot.is-active .hero__dot-fill', hero);
     if (!fill) return;
     gsap.set($$('.hero__dot-fill', hero), { scaleX: 0 });
-    if (!playing) return;
+    if (!autoplay) return;
     timer = gsap.fromTo(
       fill,
       { scaleX: 0 },
@@ -143,13 +168,6 @@ export function initHero(): void {
   dots.forEach((d, k) => d.addEventListener('click', () => void go(k)));
   $('[data-hero-prev]', hero)?.addEventListener('click', () => void go(index - 1));
   $('[data-hero-next]', hero)?.addEventListener('click', () => void go(index + 1));
-  pause?.addEventListener('click', () => {
-    playing = !playing;
-    pause.setAttribute('aria-pressed', String(!playing));
-    pause.setAttribute('aria-label', playing ? 'Pause slideshow' : 'Play slideshow');
-    hero.classList.toggle('is-paused', !playing);
-    progress();
-  });
 
   // Swipe on touch screens.
   let startX = 0;
@@ -164,11 +182,23 @@ export function initHero(): void {
   );
 
   // Stop auto-advance while the hero is off screen.
+  let inView = true;
   new IntersectionObserver(([entry]) => {
+    inView = entry?.isIntersecting ?? true;
     if (!timer) return;
-    if (entry?.isIntersecting) timer.resume();
+    if (inView) timer.resume();
     else timer.pause();
   }).observe(hero);
+
+  // Safari can freeze the page while it's hidden or parked in the back/forward cache; with no
+  // play button to fall back on, pick the slideshow up again whenever the page is shown.
+  const wake = (): void => {
+    if (!autoplay || document.visibilityState !== 'visible' || !inView || busy) return;
+    if (timer && timer.progress() < 1) timer.resume();
+    else progress();
+  };
+  document.addEventListener('visibilitychange', wake);
+  window.addEventListener('pageshow', wake);
 
   setBg(slides[0]!, true);
   enter(slides[0]!);

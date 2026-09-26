@@ -5,7 +5,7 @@ import { initTabs } from '../components/tabs';
 import { $$ } from '../lib/dom';
 import { initMotion, reducedMotion } from '../lib/motion';
 
-// FAQ accordions: animate <details> height open/closed.
+// FAQ accordions: animate <details> height open/closed (full motion only; calm and off snap).
 for (const d of $$<HTMLDetailsElement>('details.faq__item')) {
   const summary = d.querySelector('summary');
   const body = d.querySelector<HTMLElement>('.faq__body');
