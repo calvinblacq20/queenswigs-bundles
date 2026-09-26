@@ -496,7 +496,8 @@ ol {
   border-color: var(--rose);
 }
 
-/* ——— Motion initial states (only when JS + motion are available) ——— */
+/* ——— Motion initial states (only when JS + motion are available) ———
+   <html data-motion="full|calm|off"> is set by public/boot.js before first paint. */
 .motion [data-reveal],
 .motion [data-stagger] > * {
   visibility: hidden;
@@ -506,8 +507,13 @@ ol {
   visibility: hidden;
 }
 
-.motion [data-curtain] {
+.motion[data-motion='full'] [data-curtain] {
   clip-path: inset(100% 0 0 0);
+}
+
+/* Calm: images fade in place instead of wiping open. */
+.motion[data-motion='calm'] [data-curtain] {
+  visibility: hidden;
 }
 
 .split-line {
@@ -522,10 +528,39 @@ ol {
   overflow: hidden;
 }
 
+/* Calm: nothing slides. Transitions snap and panels fade in place; looping animations keep running. */
+[data-motion='calm'] *,
+[data-motion='calm'] *::before,
+[data-motion='calm'] *::after {
+  transition-duration: 0.01ms !important;
+  scroll-behavior: auto !important;
+}
+
+[data-motion='calm'] .search-panel.is-open,
+[data-motion='calm'] .qv[open] {
+  animation-name: fade-in;
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+}
+
+/* Off (or boot.js didn't run and the visitor prefers reduced motion): everything is still. */
+[data-motion='off'] *,
+[data-motion='off'] *::before,
+[data-motion='off'] *::after {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+  scroll-behavior: auto !important;
+}
+
 @media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
+  :root:not([data-motion]) *,
+  :root:not([data-motion]) *::before,
+  :root:not([data-motion]) *::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
