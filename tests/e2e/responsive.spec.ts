@@ -1,5 +1,5 @@
 import AxeBuilder from '@axe-core/playwright';
-import { expect, test } from '@playwright/test';
+import { expect, test, type Page } from '@playwright/test';
 import { measure, PAGES, scrollThrough, shotPath, watchErrors } from './helpers';
 
 for (const { slug, url } of PAGES) {
@@ -33,11 +33,8 @@ for (const { slug, url } of PAGES) {
   });
 }
 
-test('reduced motion: everything visible without scrolling', async ({ page }) => {
-  await page.emulateMedia({ reducedMotion: 'reduce' });
-  await page.goto('/');
-  await page.waitForLoadState('load');
-  const hidden = await page.evaluate(
+const hiddenMotionTargets = (page: Page): Promise<number> =>
+  page.evaluate(
     () =>
       Array.from(document.querySelectorAll('[data-reveal], [data-stagger] > *, [data-split], [data-curtain]'))
         .filter((el) => !el.closest('[hidden], .hero__slide:not(.is-active)'))
@@ -46,8 +43,41 @@ test('reduced motion: everything visible without scrolling', async ({ page }) =>
           return s.visibility === 'hidden' || Number(s.opacity) < 0.05 || s.clipPath.includes('100%');
         }).length,
   );
-  expect(hidden).toBe(0);
+
+test('reduced motion: calm mode fades content in, nothing slides, zooms or pins', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.goto('/');
+  await page.waitForLoadState('load');
+  expect(await page.evaluate(() => document.documentElement.dataset.motion)).toBe('calm');
+  await scrollThrough(page);
+  expect(await hiddenMotionTargets(page), 'content still hidden after scrolling').toBe(0);
+  const moving = await page.evaluate(() => ({
+    smoothScroll: document.documentElement.classList.contains('lenis'),
+    pinned: document.querySelectorAll('.pin-spacer').length,
+    splitHeadings: document.querySelectorAll('.split-line').length,
+    shifted: Array.from(
+      document.querySelectorAll('[data-parallax], [data-reveal], [data-curtain], [data-spin]'),
+    )
+      .filter((el) => {
+        const t = getComputedStyle(el).transform;
+        return t !== 'none' && !new DOMMatrix(t).isIdentity;
+      })
+      .map((el) => el.outerHTML.slice(0, 80)),
+  }));
+  expect(moving).toEqual({ smoothScroll: false, pinned: 0, splitHeadings: 0, shifted: [] });
+});
+
+test('?motion=off: everything visible without scrolling', async ({ page }) => {
+  await page.goto('/?motion=off');
+  await page.waitForLoadState('load');
+  expect(await hiddenMotionTargets(page)).toBe(0);
   expect(await page.evaluate(() => document.documentElement.classList.contains('motion'))).toBe(false);
+});
+
+test('?motion=full overrides the reduced-motion setting', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.goto('/?motion=full');
+  expect(await page.evaluate(() => document.documentElement.dataset.motion)).toBe('full');
 });
 
 // Accessibility is engine-independent; scan once on a phone and once on a laptop.
