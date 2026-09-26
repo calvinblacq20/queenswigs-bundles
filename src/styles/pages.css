@@ -40,6 +40,7 @@
   top: 0;
   z-index: 5;
   background: rgb(255 255 255 / 0.96);
+  -webkit-backdrop-filter: blur(8px);
   backdrop-filter: blur(8px);
   border-bottom: 1px solid var(--line);
 }
@@ -64,6 +65,7 @@
   scrollbar-width: none;
   padding-block: 2px;
   padding-right: 32px;
+  -webkit-mask-image: linear-gradient(90deg, #000 calc(100% - 40px), transparent);
   mask-image: linear-gradient(90deg, #000 calc(100% - 40px), transparent);
 }
 
@@ -458,6 +460,7 @@
 
 .qv::backdrop {
   background: rgb(11 10 9 / 0.6);
+  -webkit-backdrop-filter: blur(3px);
   backdrop-filter: blur(3px);
 }
 

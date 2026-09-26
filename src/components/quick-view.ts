@@ -66,6 +66,11 @@ function render(p: Product): string {
 export function openQuickView(slug: string): void {
   const p = productBySlug(slug);
   if (!p) return;
+  // Browsers without <dialog> (iOS < 15.4) go straight to the product page.
+  if (typeof HTMLDialogElement !== 'function') {
+    window.location.href = productUrl(p);
+    return;
+  }
   const d = dialog();
   d.innerHTML = render(p);
   const form = d.querySelector<HTMLFormElement>('[data-form]')!;

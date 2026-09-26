@@ -8,7 +8,7 @@
   --hero-ink: #f6f1e9;
   --chrome-h: 104px;
   position: relative;
-  height: clamp(480px, calc(100svh - var(--chrome-h)), 940px);
+  height: clamp(480px, calc(100 * var(--vh) - var(--chrome-h)), 940px);
   background: var(--hero-bg);
   color: var(--hero-ink);
   overflow: hidden;
@@ -38,7 +38,7 @@
 
 /* Centred with inset + auto margins (GSAP owns `transform`/`translate` on this element). */
 .hero__frame {
-  --fw: clamp(200px, min(34vw, 50svh), 470px);
+  --fw: clamp(200px, min(34vw, calc(50 * var(--vh))), 470px);
   position: absolute;
   inset: 0 0 8% 0;
   margin: auto;
@@ -60,7 +60,7 @@
   z-index: 2;
   width: 100%;
   padding-inline: var(--gutter);
-  font-size: clamp(52px, min(15.5vw, calc((100svh - var(--chrome-h) - 290px) / 1.75)), 250px);
+  font-size: clamp(52px, min(15.5vw, calc((100 * var(--vh) - var(--chrome-h) - 290px) / 1.75)), 250px);
   line-height: 0.84;
   letter-spacing: -0.035em;
   text-transform: uppercase;
@@ -104,9 +104,9 @@
   z-index: 3;
   display: grid;
   justify-items: center;
-  gap: clamp(12px, 2svh, 18px);
+  gap: clamp(12px, calc(2 * var(--vh)), 18px);
   width: min(520px, 100% - 32px);
-  margin-top: clamp(14px, 3svh, 36px);
+  margin-top: clamp(14px, calc(3 * var(--vh)), 36px);
   text-align: center;
 }
 
@@ -208,12 +208,12 @@
   }
 
   .hero__frame {
-    --fw: min(62vw, 44svh);
+    --fw: min(62vw, calc(44 * var(--vh)));
     inset: 0 0 14% 0;
   }
 
   .hero__title {
-    font-size: clamp(48px, min(19vw, calc((100svh - var(--chrome-h) - 250px) / 1.75)), 120px);
+    font-size: clamp(48px, min(19vw, calc((100 * var(--vh) - var(--chrome-h) - 250px) / 1.75)), 120px);
   }
 
   /* Swipe changes slides on phones; keep the control row clear of the WhatsApp button. */
@@ -1229,6 +1229,7 @@
   height: 44px;
   border-radius: 50%;
   background: rgb(255 255 255 / 0.18);
+  -webkit-backdrop-filter: blur(6px);
   backdrop-filter: blur(6px);
   transition:
     background-color 0.3s,
